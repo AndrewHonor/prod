@@ -1,4 +1,6 @@
 import win32net
+import subprocess
+
 
 users_template = []
 user_template = {
@@ -27,8 +29,17 @@ def get_windows_users():
     return users_list
 
 def check_has_password(user):
-    # Додайте ваш код для перевірки наявності пароля для користувача
-    pass
+    # Створюємо команду PowerShell для отримання інформації про обліковий запис
+    command = f"Get-LocalUser -Name {user} | Select-Object -ExpandProperty PasswordRequired"
+
+    # Запускаємо команду PowerShell за допомогою subprocess і зберігаємо результат
+    result = subprocess.run(["powershell", "-Command", command], capture_output=True, check=True)
+
+    # Декодуємо результат з байтів у рядок
+    output = result.stdout.decode()
+
+    # Повертаємо результат без символів переносу рядка
+    return output.strip()
 
 def check_has_folder_d(user):
     # Додайте ваш код для перевірки наявності теки на диску "D" для користувача

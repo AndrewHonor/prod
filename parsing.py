@@ -1,4 +1,5 @@
 import win32net
+import subprocess
 users_template = []
 user_template = {
         'login': None,
@@ -37,7 +38,17 @@ for user in users:
 
 
     def check_has_password(user):
-        pass
+        # Створюємо команду PowerShell для отримання інформації про обліковий запис
+        command = f"Get-LocalUser -Name {user} | Select-Object PasswordRequired"
+
+        # Запускаємо команду PowerShell за допомогою subprocess і зберігаємо результат
+        result = subprocess.run(["powershell", "-Command", command], capture_output=True, check=True)
+
+        # Декодуємо результат з байтів у рядок
+        output = result.stdout.decode()
+
+        # Повертаємо результат
+        return output
 
 
     def check_has_folder_d(user):

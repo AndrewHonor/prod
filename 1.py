@@ -1,19 +1,21 @@
-# Імпортуємо модуль subprocess для запуску команд PowerShell
 import subprocess
 
-# Визначаємо функцію, яка приймає на себе логін і видавати інформацію по стрічці PasswordRequired
-def check_password_required(username):
-    # Створюємо команду PowerShell для отримання інформації про обліковий запис
-    command = f"Get-LocalUser -Name {username} | Select-Object -ExpandProperty PasswordRequired"
+def is_user_active(username):
+    # Створюємо команду Powershell для запиту стану користувача
+    command = f"quser /server:$env:COMPUTERNAME | Select-String {username}"
 
-    # Запускаємо команду PowerShell за допомогою subprocess і зберігаємо результат
-    result = subprocess.run(["powershell", "-Command", command], capture_output=True, check=True)
+    try:
+        # Запускаємо команду Powershell і отримуємо результат
+        output = subprocess.check_output(["powershell.exe", command], stderr=subprocess.STDOUT)
 
-    # Декодуємо результат з байтів у рядок
-    output = result.stdout.decode()
+        # Перевіряємо, чи містить результат слово "Active"
+        if b"Active" in output:
+            return True
+        else:
+            return False
+    except subprocess.CalledProcessError as e:
+        # Якщо команда повертає ненульовий код виходу, то користувач не існує або виникла помилка
+        print(f"Error: {e.output.decode()}")
+        return None
 
-    # Повертаємо результат без символів переносу рядка
-    return output.strip()
-
-# Викликаємо функцію з прикладним логіном
-print(check_password_required("tu3"))
+print(is_user_active('tu2'))

@@ -16,6 +16,7 @@ user_template = {
 }
 
 def get_windows_users():
+    #Створює список користувачів
     excluded_users = ["WDAGUtilityAccount", "Guest", "DefaultAccount"]
     users_list = []
     try:
@@ -28,6 +29,24 @@ def get_windows_users():
         print("Помилка: ", e)
     return users_list
 
+
+def is_user_active(user):
+    # Створюємо команду Powershell для запиту стану користувача
+    command = f"quser /server:$env:COMPUTERNAME | Select-String {user}"
+
+    try:
+        # Запускаємо команду Powershell і отримуємо результат
+        output = subprocess.check_output(["powershell.exe", command], stderr=subprocess.STDOUT)
+
+        # Перевіряємо, чи містить результат слово "Active"
+        if b"Active" in output:
+            return True
+        else:
+            return False
+    except subprocess.CalledProcessError as e:
+        # Якщо команда повертає ненульовий код виходу, то користувач не існує або виникла помилка
+        print(f"Error: {e.output.decode()}")
+        return None
 def check_has_password(user):
     # Створюємо команду PowerShell для отримання інформації про обліковий запис
     command = f"Get-LocalUser -Name {user} | Select-Object -ExpandProperty PasswordRequired"
@@ -40,6 +59,8 @@ def check_has_password(user):
 
     # Повертаємо результат без символів переносу рядка
     return output.strip()
+
+
 
 def check_has_folder_d(user):
     # Додайте ваш код для перевірки наявності теки на диску "D" для користувача
@@ -60,6 +81,7 @@ def check_powershell_access_blocked(user):
 def get_user_details(user):
     new_user = user_template.copy()
     new_user['login'] = user
+    new_user['Account active'] = is_user_active(user)
     new_user['has_password'] = check_has_password(user)
     new_user['has_folder_d'] = check_has_folder_d(user)
     new_user['folder_d_access'] = check_folder_d_access(user)

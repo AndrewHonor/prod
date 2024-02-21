@@ -1,48 +1,17 @@
-# імпортуємо модулі win32net і time
-import win32net
-import time
+import os
 
-# створюємо функцію, яка отримує час останнього входу в систему
-def get_last_logon(username):
-    # отримуємо список користувачів і їх інформацію
-    users, _, _ = win32net.NetUserEnum(None, 2)
-    # перебираємо користувачів
-    for user in users:
-        # якщо знайшли потрібного користувача
-        if user['name'] == username:
-            # повертаємо його час останнього входу
-            return user['last_logon']
-    # якщо не знайшли потрібного користувача
+# визначаємо функцію, яка приймає логін локального користувача віндовс
+def check_folder(username):
+    # формуємо шлях до папки на диску D, з таким же іменем як і логін користувача
+    folder_path = f"D:\\{username}"
+    # перевіряємо, чи існує така папка
+    if os.path.exists(folder_path):
+        # якщо так, то виводимо повідомлення, що папка існує
+        return True
     else:
-        # повертаємо повідомлення про помилку
-        return "Немає такого користувача"
+        # якщо ні, то виводимо повідомлення, що папки немає
+        return False
 
-# створюємо функцію, яка перетворює UNIX-час у формат чисел
-def format_unix_time(unix_time):
-    # перевіряємо, чи unix_time є числом
-    if isinstance(unix_time, int):
-        # визначаємо рядок з кодами форматування дати і часу
-        time_format = "%Y-%m-%d %H:%M:%S"
-        # перетворюємо UNIX-час у формат чисел
-        formatted_time = time.strftime(time_format, time.gmtime(unix_time))
-        # повертаємо результат
-        return formatted_time
-    else:
-        # повертаємо те саме, що і unix_time
-        return unix_time
 
-# створюємо функцію, яка поєднує дві функції в одну
-def combine_functions(outer, inner):
-    # повертаємо лямбда-функцію, яка приймає будь-які аргументи
-    return lambda *args: outer(inner(*args))
-
-# створюємо функцію, яка знаходить час останнього входу в систему користувача і виводить його у форматі чисел
-get_last_activity = combine_functions(format_unix_time, get_last_logon)
-
-# викликаємо функцію з ім'ям користувача
-print(get_last_activity("Admin"))
-
-print(get_last_activity('Admin'))
-print(get_last_activity('tu1'))
-print(get_last_activity('tu2'))
-print(get_last_activity('tu3'))
+check_folder('Admin')
+check_folder('tu1')
